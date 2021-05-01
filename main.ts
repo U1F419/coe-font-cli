@@ -10,6 +10,7 @@ const main = async () => {
 
 	const scraper = await Scraper.build();
 	await scraper.login(email, password);
+	await scraper.generate("はろー、わーるど");
 	await scraper.close();
 };
 
