@@ -4,15 +4,18 @@ import fs from "fs";
 const URL = "https://coefont.studio/" as const;
 
 export class Scraper {
-	constructor(
+	private constructor(
 		private browser: puppeteer.Browser,
 		private page: puppeteer.Page,
 		private cdp: puppeteer.CDPSession,
 		private downloadPath: string,
 	) {}
 
-	private static DEFAULT_DOWNLOAD_PATH = "./download";
-	static async build(downloadPath: string = Scraper.DEFAULT_DOWNLOAD_PATH) {
+	static async build(downloadPath: string) {
+		if (!fs.existsSync(downloadPath)) {
+			fs.mkdirSync(downloadPath);
+		}
+
 		const browser = await puppeteer.launch({
 			headless: false,
 			devtools: true,
@@ -28,8 +31,6 @@ export class Scraper {
 
 	async login(mail: string, password: string) {
 		await this.page.goto(URL + "login", { waitUntil: "networkidle2" });
-		await this.screenshot("login");
-
 		await this.page.type(
 			"form.v-form > div:nth-child(1) > div input",
 			mail,
@@ -39,8 +40,6 @@ export class Scraper {
 			password,
 		);
 
-		await this.screenshot("input");
-
 		await this.page.click("form.v-form > button");
 
 		if (await this.page.$(".v-alert")) {
@@ -48,18 +47,13 @@ export class Scraper {
 		}
 
 		await this.page.waitForNavigation({ waitUntil: "networkidle2" });
-		await this.screenshot("after_login");
 	}
 
 	private areaCount = 1;
 	async generate(content: string) {
-		await this.screenshot("start_generate");
-
 		const selector = `.maineditor > div:nth-child(${this.areaCount})`;
 
 		await this.page.type(`${selector} textarea`, content);
-
-		await this.screenshot("insert_content");
 
 		await this.page.evaluate((s: string) => {
 			const button = document.querySelectorAll(
@@ -75,11 +69,9 @@ export class Scraper {
 			`#yomiarea span:nth-child(${content.length})`,
 		);
 
-		await this.screenshot("loaded_setting");
-
 		await this.page.click(".elevation-1 button.download-button-size");
 
-		await this.waitForFileDownload();
+		await this.waitForFileDownload(content);
 		this.areaCount++;
 	}
 
@@ -90,18 +82,21 @@ export class Scraper {
 	private ssCount = 1;
 	private async screenshot(name: string) {
 		await this.page.screenshot({
-			path: `screenshot/${("000" + this.ssCount++).slice(
+			path: `./screenshot/${("000" + this.ssCount++).slice(
 				-3,
 			)}_${name}.png`,
 		});
 	}
 
-	private async waitForFileDownload() {
-		let filename = "";
-		while (!filename || filename.endsWith(".crdownload")) {
-			filename = fs.readdirSync(this.downloadPath)[0];
+	private async waitForFileDownload(filename: string) {
+		const dlFileName = "coe-font-studio.wav";
+		while (!fs.existsSync(`${this.downloadPath}/${dlFileName}`)) {
 			await this.page.waitForTimeout(500);
 		}
-		return filename;
+
+		fs.renameSync(
+			`${this.downloadPath}/${dlFileName}`,
+			`${this.downloadPath}/${filename}.wav`,
+		);
 	}
 }

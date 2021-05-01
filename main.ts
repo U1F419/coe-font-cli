@@ -1,17 +1,28 @@
 import { CoeFontClient } from "./src/CoeFontClient";
-import { Scraper } from "./src/Scraper";
+import readlineSync from "readline-sync";
 
 const main = async () => {
-	const client = new CoeFontClient("mail", "pass").login();
-	client.generate("Hello, world!");
-
-	const email = process.env["COEFONT_EMAIL"] ?? "test_email";
-	const password = process.env["COEFONT_PASSWORD"] ?? "test_password";
-
-	const scraper = await Scraper.build();
-	await scraper.login(email, password);
-	await scraper.generate("はろー、わーるど");
-	await scraper.close();
+	const cfc = await CoeFontClient.build();
+	console.log("ログインします");
+	const email = readlineSync.questionEMail("メールアドレス: ");
+	const password = readlineSync.question("パスワード: ");
+	await cfc.login(email, password);
+	console.log("CoeFontにログインしました。");
+	while (true) {
+		const cmd = readlineSync.question("コマンド: ");
+		switch (cmd) {
+			case "gen":
+				const context = readlineSync.question("生成したい文章: ");
+				await cfc.generate(context);
+				break;
+			case "exit":
+				await cfc.exit();
+				console.log("bye");
+				return 1;
+			default:
+				break;
+		}
+	}
 };
 
 main();

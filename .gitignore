@@ -135,3 +135,8 @@ temp/
 
 # End of https://www.toptal.com/developers/gitignore/api/node,code
 .envrc
+
+download
+screenshot
+
+.DS_Store

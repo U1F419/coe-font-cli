@@ -1,11 +1,12 @@
 {
-  "name": "cfn_unfapi",
+  "name": "coe-font-cli",
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^15.0.1",
     "@types/puppeteer": "^5.4.3",
+    "@types/readline-sync": "^1.4.3",
     "npm-run-all": "^4.1.5",
     "rimraf": "^3.0.2",
     "ts-node": "^9.1.1",
@@ -14,9 +15,10 @@
   "scripts": {
     "build": "tsc",
     "dev": "ts-node -O '{ \"module\": \"commonjs\" }' main.ts",
-    "predev": "rimraf -rf screenshot/*.png"
+    "predev": "rimraf -rf screenshot/*.png && rimraf -rf download/*"
   },
   "dependencies": {
-    "puppeteer": "^9.0.0"
+    "puppeteer": "^9.0.0",
+    "readline-sync": "^1.4.10"
   }
 }
