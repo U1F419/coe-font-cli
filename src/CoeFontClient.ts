@@ -1,5 +1,3 @@
-const url = "https://coefont.studio" as const;
-
 export class CoeFontClient {
 	constructor(
 		private mail: string,
